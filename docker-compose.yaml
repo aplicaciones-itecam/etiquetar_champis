@@ -1,0 +1,40 @@
+volumes:
+  postgres_data:
+
+services:
+
+  etiquetador:
+      build:
+        context: ./etiquetador
+      container_name: api_etiquetador
+      ports:
+        - "8000:8000"
+      depends_on:
+        - db
+
+
+  db:
+    image: postgres:13
+    container_name: etiquetador_postgres_container
+    environment:
+      POSTGRES_DB: db
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: password
+      PGPORT: 5432
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  frontend:
+    build:
+      context: ./frontend
+    container_name: etiquetar-frontend_frontend
+    ports:
+      - "3000:5173"
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+    environment:
+      - CHOKIDAR_USEPOLLING=true
+
