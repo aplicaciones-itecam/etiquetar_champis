@@ -1,4 +1,5 @@
-'''schemas para champi'''
+"""schemas para champi"""
+
 from pydantic import BaseModel, ConfigDict
 
 
@@ -8,12 +9,7 @@ class ChampiBase(BaseModel):
     :param id: identificador unico.
     :type id: int
     """
-    id: int
 
-class ChampiCreate(ChampiBase):
-    pass
-class ChampiUpdate(ChampiBase):
-    pass
-class Champi(ChampiBase):
-    id: int
 
+class Champi(BaseModel):
+    imagen: str
