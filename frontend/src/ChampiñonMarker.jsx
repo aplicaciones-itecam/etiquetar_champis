@@ -1,5 +1,7 @@
 import React, { useRef, useState } from "react";
 
+import { FormChampi } from "@/components/form";
+
 function ChampiñonMarker() {
   const [imageFile, setImageFile] = useState(null);
   const [imageSrc, setImageSrc] = useState(null);
@@ -90,7 +92,9 @@ function ChampiñonMarker() {
 
   return (
     <div style={{ padding: "20px", fontFamily: "sans-serif" }}>
-      <h2>Marcar champiñones + datos ambientales</h2>
+      <h2 className="text-2xl mt-2 mb-8">Toma datos</h2>
+
+      <FormChampi />
 
       <div style={{ marginBottom: 10 }}>
         <input type="file" accept="image/*" onChange={handleImageChange} />

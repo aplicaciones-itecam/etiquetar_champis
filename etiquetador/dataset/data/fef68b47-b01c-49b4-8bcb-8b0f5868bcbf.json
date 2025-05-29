@@ -1,0 +1,27 @@
+{
+    "dia_entrada": "2025-05-29",
+    "temperatura": null,
+    "humedad": null,
+    "sala": "5",
+    "muestra": "2",
+    "fecha": "2025-05-22",
+    "hora": "13:33",
+    "temp_compost": null,
+    "co2": null,
+    "circulacion": null,
+    "observaciones": "",
+    "annotations": [
+        {
+            "points": [
+                {
+                    "x": 194.0,
+                    "y": 104.92531752751906
+                },
+                {
+                    "x": 274.0,
+                    "y": 205.85348010160882
+                }
+            ]
+        }
+    ]
+}

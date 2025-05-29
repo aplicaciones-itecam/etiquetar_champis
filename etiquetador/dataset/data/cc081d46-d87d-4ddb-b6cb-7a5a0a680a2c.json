@@ -1,0 +1,14 @@
+{
+    "dia_entrada": "2025-05-22",
+    "temperatura": 123.45,
+    "humedad": 123.45,
+    "sala": "3",
+    "muestra": "2",
+    "fecha": "2025-05-14",
+    "hora": "17:23",
+    "temp_compost": 123.45,
+    "co2": 123.45,
+    "circulacion": 123.45,
+    "observaciones": "123,45",
+    "annotations": [
+        
