@@ -214,7 +214,7 @@ export function FormChampi() {
                 <AppInput form={form} name="circulacion" label="Circulación" type="number" />
                 <AppTextarea form={form} name="observaciones" label="Observaciones" />
 
-                <Button type="submit">Subir imagen</Button>
+                <Button type="submit">Guardar registro</Button>
             </form>
         </Form>
     )
