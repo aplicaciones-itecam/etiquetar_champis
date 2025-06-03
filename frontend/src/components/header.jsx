@@ -21,7 +21,7 @@ import {
     Sun,
 } from "lucide-react"
 
-import logo from "@/assets/logo.png"
+import logo from "@/assets/logo.jfif"
 
 export default function StickyHeader({
     user = {
@@ -53,7 +53,7 @@ export default function StickyHeader({
 
                     <div className="flex items-center gap-6">
                         <div className="flex items-center gap-2">
-                            <img src={logo} alt="Logo" className="w-30 h-15 block" />
+                            <img src={logo} alt="Logo" className="size-12 block" />
                         </div>
 
                         {/* Navegación desktop */}
