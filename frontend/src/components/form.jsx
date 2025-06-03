@@ -1,7 +1,7 @@
 import { z } from "zod"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useForm } from "react-hook-form"
-import React, { useState, useCallback } from 'react'; // Añadir useState y useCallback
+import React, { useState, useCallback, useMemo } from 'react'; // Añadir useMemo
 
 import { AppInput, AppTextarea, AppSelect } from "@/components/ui/form-app";
 import { Button } from "@/components/ui/button"
@@ -60,6 +60,7 @@ export function FormChampi() {
     } = useImageAnnotation();
 
     const handleFileSelected = (event) => {
+        event.preventDefault();
         const file = event.target.files?.[0];
         if (file) {
             const reader = new FileReader();
@@ -136,15 +137,15 @@ export function FormChampi() {
         }
     }
 
-    const salasArray = Array.from({ length: 14 }, (_, i) => ({
+    const salasArray = useMemo(() => Array.from({ length: 14 }, (_, i) => ({
         value: (i + 1).toString(),
         label: `Sala ${i + 1}`,
-    }))
+    })), []);
 
-    const muestrasArray = Array.from({ length: 3 }, (_, i) => ({
+    const muestrasArray = useMemo(() => Array.from({ length: 3 }, (_, i) => ({
         value: (i + 1).toString(),
         label: `Muestra ${i + 1}`,
-    }))
+    })), []);
 
     return (
         <Form {...form}>
