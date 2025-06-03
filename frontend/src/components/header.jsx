@@ -21,7 +21,7 @@ import {
     Sun,
 } from "lucide-react"
 
-import logo from "@/assets/logo.jfif"
+import logo from "@/assets/logo.png"
 
 export default function StickyHeader({
     user = {
