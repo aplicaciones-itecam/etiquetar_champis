@@ -410,6 +410,11 @@ export function AnnotationTool({ imageUrl, onAnnotationsChange, existingAnnotati
                     Mover/Zoom
                 </Button>
 
+            </div>
+
+            <div style={{ position: 'absolute', bottom: '10px', left: '10px', zIndex: 20, display: 'flex', gap: '16px', background: 'rgba(255,255,255,0.8)', padding: '5px', borderRadius: '16px' }} className='text-xl'>
+
+
                 <Button
                     type="button"
                     onClick={clearLastAnnotation}

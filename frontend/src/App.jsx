@@ -5,8 +5,6 @@ import { FormChampi } from "@/components/form";
 import { ImageAnnotator } from "./components/image/image";
 
 import eruda from 'eruda';
-
-
 eruda.init();
 
 function App() {

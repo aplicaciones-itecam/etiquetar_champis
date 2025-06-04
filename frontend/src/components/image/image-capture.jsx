@@ -28,8 +28,8 @@ export function ImageDisplay({ imageUrl, children }) {
     if (!imageUrl) return null;
 
     return (
-        <div style={{ position: 'relative', maxWidth: '100%', maxHeight: '70vh', overflow: 'hidden' }}>
-            <img src={imageUrl} alt="To annotate" style={{ display: 'block', maxWidth: '100%', maxHeight: '70vh' }} />
+        <div style={{ position: 'relative', maxWidth: '100%', height: '70vh', overflow: 'hidden' }}>
+            {/* <img src={imageUrl} alt="To annotate" style={{ display: 'block', maxWidth: '100%', maxHeight: '70vh' }} /> */}
             {children} {/* For overlaying annotation tools */}
         </div>
     );
