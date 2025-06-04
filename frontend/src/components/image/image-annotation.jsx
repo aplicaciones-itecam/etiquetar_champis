@@ -1,6 +1,5 @@
 import React, { useRef, useEffect, useState, useCallback } from 'react';
-
-// No necesitamos PAN_THRESHOLD con el sistema de modos explícito
+import { Button } from "@/components/ui/button";
 
 export function AnnotationTool({ imageUrl, onAnnotationsChange, existingAnnotations = [] }) {
     const canvasRef = useRef(null);
@@ -14,44 +13,33 @@ export function AnnotationTool({ imageUrl, onAnnotationsChange, existingAnnotati
     const [zoomLevel, setZoomLevel] = useState(1);
     const [panOffset, setPanOffset] = useState({ x: 0, y: 0 });
 
-    const [isPanningWithTouch, setIsPanningWithTouch] = useState(false); // Para el paneo táctil con un dedo
-    const [isPanningWithMouse, setIsPanningWithMouse] = useState(false); // Para el paneo con ratón
-    const [lastPanPosition, setLastPanPosition] = useState(null); // Coordenadas en el buffer del canvas
+    const [isPanningWithTouch, setIsPanningWithTouch] = useState(false);
+    const [isPanningWithMouse, setIsPanningWithMouse] = useState(false);
+    const [lastPanPosition, setLastPanPosition] = useState(null);
     const [touchState, setTouchState] = useState({
-        isPinching: false,
-        initialPinchDistance: null,
-        lastPinchMidpoint: null,
-        initialZoom: 1,
-        initialPanOffset: { x: 0, y: 0 },
+        isPinching: false, initialPinchDistance: null, lastPinchMidpoint: null,
+        initialZoom: 1, initialPanOffset: { x: 0, y: 0 },
     });
 
-    const [interactionMode, setInteractionMode] = useState('annotate'); // 'annotate' o 'pan'
+    const [interactionMode, setInteractionMode] = useState('annotate');
 
     const handleModeChange = (newMode) => {
-        setIsDrawing(false);
-        setCurrentRect(null);
-        setIsPanningWithTouch(false);
-        setIsPanningWithMouse(false);
-        setLastPanPosition(null);
+        setIsDrawing(false); setCurrentRect(null); setIsPanningWithTouch(false);
+        setIsPanningWithMouse(false); setLastPanPosition(null);
         setTouchState(prev => ({ ...prev, isPinching: false, initialPinchDistance: null }));
         setInteractionMode(newMode);
     };
-
 
     useEffect(() => {
         if (imageUrl && canvasRef.current) {
             const img = imageRef.current;
             img.crossOrigin = "anonymous";
             img.onload = () => {
-                const canvas = canvasRef.current;
-                const parentElement = canvas.parentElement;
+                const canvas = canvasRef.current; const parentElement = canvas.parentElement;
                 imageDimensionsRef.current = { width: img.naturalWidth, height: img.naturalHeight };
                 if (canvas && parentElement) {
-                    canvas.width = parentElement.offsetWidth;
-                    canvas.height = parentElement.offsetHeight;
-                    setZoomLevel(1); // Reinicia zoom y pan para nueva imagen
-                    setPanOffset({ x: 0, y: 0 }); // O centrar la imagen si es necesario
-                    // setInteractionMode('annotate'); // Podrías volver al modo por defecto si lo deseas
+                    canvas.width = parentElement.offsetWidth; canvas.height = parentElement.offsetHeight;
+                    setZoomLevel(1); setPanOffset({ x: 0, y: 0 });
                 }
             };
             img.onerror = () => console.error("Error al cargar la imagen para anotación.");
@@ -60,53 +48,88 @@ export function AnnotationTool({ imageUrl, onAnnotationsChange, existingAnnotati
     }, [imageUrl]);
 
     const getEventCoordinates = useCallback((event) => {
-        const canvas = canvasRef.current;
-        if (!canvas) return { x: 0, y: 0 };
+        const canvas = canvasRef.current; if (!canvas) return { x: 0, y: 0 };
         const rect = canvas.getBoundingClientRect();
         let clientX, clientY;
-        if (event.touches && event.touches.length > 0) {
-            clientX = event.touches[0].clientX; clientY = event.touches[0].clientY;
-        } else {
-            clientX = event.clientX; clientY = event.clientY;
-        }
+        if (event.touches && event.touches.length > 0) { clientX = event.touches[0].clientX; clientY = event.touches[0].clientY; }
+        else { clientX = event.clientX; clientY = event.clientY; }
         const displayX = clientX - rect.left; const displayY = clientY - rect.top;
-        const canvasBufferX = displayX * (canvas.width / rect.width);
-        const canvasBufferY = displayY * (canvas.height / rect.height);
-        const imageX = (canvasBufferX - panOffset.x) / zoomLevel;
-        const imageY = (canvasBufferY - panOffset.y) / zoomLevel;
-        return { x: imageX, y: imageY };
+        const cX = displayX * (canvas.width / rect.width); const cY = displayY * (canvas.height / rect.height);
+        return { x: (cX - panOffset.x) / zoomLevel, y: (cY - panOffset.y) / zoomLevel };
     }, [panOffset, zoomLevel]);
 
-    const drawRectOnTransformedContext = useCallback((rect, context, color = 'rgba(255, 0, 0, 0.5)', strokeColor = 'red', lineWidth = 1) => {
+    // MODIFICADO: Ahora dibuja un círculo
+    const drawAnnotationShape = useCallback((annotation, context, fillColor = 'rgba(255, 0, 0, 0.3)', strokeColor = 'red', lineWidth = 1) => {
         const ctx = context;
-        if (ctx && rect) {
-            const { x, y, width, height } = rect;
-            if (width > 0 && height > 0) {
-                ctx.fillStyle = color; ctx.fillRect(x, y, width, height);
+        if (ctx && annotation) {
+            // annotation.x, y, width, height definen el CUADRADO DELIMITADOR del círculo
+            const centerX = annotation.x + annotation.width / 2;
+            const centerY = annotation.y + annotation.height / 2;
+            const radius = annotation.width / 2; // width y height deberían ser iguales (diámetro)
+
+            if (radius > 0) {
+                ctx.beginPath();
+                ctx.arc(centerX, centerY, radius, 0, 2 * Math.PI, false);
+                ctx.fillStyle = fillColor;
+                ctx.fill();
                 ctx.strokeStyle = strokeColor;
                 ctx.lineWidth = Math.max(0.5, lineWidth / zoomLevel);
-                ctx.strokeRect(x, y, width, height);
+                ctx.stroke();
             }
         }
     }, [zoomLevel]);
 
     const redrawAnnotations = useCallback(() => {
-        const canvas = canvasRef.current; const img = imageRef.current; const imgDims = imageDimensionsRef.current;
-        if (!canvas || !canvas.getContext || !img.complete || imgDims.width === 0) return;
+        const canvas = canvasRef.current;
+        const img = imageRef.current;
+        const imgDims = imageDimensionsRef.current;
+
+        if (!canvas || !canvas.getContext || !img.complete || imgDims.width === 0) {
+            return;
+        }
         const ctx = canvas.getContext('2d');
-        ctx.clearRect(0, 0, canvas.width, canvas.height); ctx.save();
-        ctx.translate(panOffset.x, panOffset.y); ctx.scale(zoomLevel, zoomLevel);
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        ctx.save();
+        ctx.translate(panOffset.x, panOffset.y);
+        ctx.scale(zoomLevel, zoomLevel);
+
         ctx.drawImage(img, 0, 0, imgDims.width, imgDims.height);
-        annotations.forEach(anno => drawRectOnTransformedContext(anno, ctx));
+
+        annotations.forEach(anno => {
+            drawAnnotationShape(anno, ctx);
+        });
+
+        // MODIFICADO: Mostrar un CÍRCULO como previsualización mientras se dibuja
         if (isDrawing && currentRect) {
-            const tempRect = {
-                x: Math.min(currentRect.startX, currentRect.endX), y: Math.min(currentRect.startY, currentRect.endY),
-                width: Math.abs(currentRect.endX - currentRect.startX), height: Math.abs(currentRect.endY - currentRect.startY),
-            };
-            drawRectOnTransformedContext(tempRect, ctx, 'rgba(0, 0, 255, 0.2)', 'rgba(0,0,255,0.5)');
+            // Calcular las propiedades del rectángulo que el usuario está definiendo
+            const previewUserRectX = Math.min(currentRect.startX, currentRect.endX);
+            const previewUserRectY = Math.min(currentRect.startY, currentRect.endY);
+            const previewUserRectWidth = Math.abs(currentRect.endX - currentRect.startX);
+            const previewUserRectHeight = Math.abs(currentRect.endY - currentRect.startY);
+
+            // Solo dibujar la previsualización si el área es válida
+            if (previewUserRectWidth > 0 && previewUserRectHeight > 0) {
+                // Calcular las propiedades del círculo inscrito en ese rectángulo
+                const previewCircleCenterX = previewUserRectX + previewUserRectWidth / 2;
+                const previewCircleCenterY = previewUserRectY + previewUserRectHeight / 2;
+                const previewCircleRadius = Math.min(previewUserRectWidth, previewUserRectHeight) / 2;
+
+                if (previewCircleRadius > 0) {
+                    // Crear un objeto temporal con formato de anotación para el círculo de previsualización
+                    const previewCircleAnnotation = {
+                        x: previewCircleCenterX - previewCircleRadius,
+                        y: previewCircleCenterY - previewCircleRadius,
+                        width: 2 * previewCircleRadius,
+                        height: 2 * previewCircleRadius,
+                    };
+                    // Usar drawAnnotationShape para dibujar el círculo de previsualización
+                    // Se pueden usar colores diferentes para distinguirlo de las anotaciones finales
+                    drawAnnotationShape(previewCircleAnnotation, ctx, 'rgba(0, 0, 255, 0.2)', 'rgba(0,0,255,0.5)');
+                }
+            }
         }
         ctx.restore();
-    }, [annotations, panOffset, zoomLevel, isDrawing, currentRect, drawRectOnTransformedContext]);
+    }, [annotations, panOffset, zoomLevel, isDrawing, currentRect, drawAnnotationShape]);
 
     useEffect(() => redrawAnnotations(), [redrawAnnotations]);
 
@@ -121,28 +144,50 @@ export function AnnotationTool({ imageUrl, onAnnotationsChange, existingAnnotati
         setCurrentRect(prev => ({ ...prev, endX: pos.x, endY: pos.y }));
     }, [isDrawing, currentRect, getEventCoordinates]);
 
+    // MODIFICADO: Crea un círculo a partir del rectángulo dibujado
     const internalHandleDrawEnd = useCallback(() => {
         if (!isDrawing || !currentRect) { setIsDrawing(false); setCurrentRect(null); return; }
         setIsDrawing(false);
-        const r = {
-            x: Math.min(currentRect.startX, currentRect.endX), y: Math.min(currentRect.startY, currentRect.endY),
-            width: Math.abs(currentRect.endX - currentRect.startX), height: Math.abs(currentRect.endY - currentRect.startY),
+
+        const userRectX = Math.min(currentRect.startX, currentRect.endX);
+        const userRectY = Math.min(currentRect.startY, currentRect.endY);
+        const userRectWidth = Math.abs(currentRect.endX - currentRect.startX);
+        const userRectHeight = Math.abs(currentRect.endY - currentRect.startY);
+
+        if (userRectWidth < 5 || userRectHeight < 5) { setCurrentRect(null); return; }
+
+        const circleCenterX = userRectX + userRectWidth / 2;
+        const circleCenterY = userRectY + userRectHeight / 2;
+        const circleRadius = Math.min(userRectWidth, userRectHeight) / 2;
+
+        if (circleRadius < 2.5) { setCurrentRect(null); return; } // Círculo demasiado pequeño
+
+        const newAnnotationData = {
+            type: 'circle', // Tipo de anotación
+            x: circleCenterX - circleRadius,    // Coordenada X del cuadrado delimitador del círculo
+            y: circleCenterY - circleRadius,    // Coordenada Y del cuadrado delimitador del círculo
+            width: 2 * circleRadius,            // Ancho del cuadrado (diámetro)
+            height: 2 * circleRadius,           // Alto del cuadrado (diámetro)
+            // coordsLLM sigue guardando los puntos originales que definieron el rectángulo
+            coordsLLM: {
+                points: [
+                    { x: currentRect.startX, y: currentRect.startY },
+                    { x: currentRect.endX, y: currentRect.endY }
+                ]
+            }
         };
-        if (r.width < 5 || r.height < 5) { setCurrentRect(null); return; }
-        const newAnno = { ...r, coordsLLM: { points: [{ x: currentRect.startX, y: currentRect.startY }, { x: currentRect.endX, y: currentRect.endY }] } };
-        const updatedAnnos = [...annotations, newAnno];
+        const updatedAnnos = [...annotations, newAnnotationData];
         setAnnotations(updatedAnnos); onAnnotationsChange(updatedAnnos);
         setCurrentRect(null);
     }, [isDrawing, currentRect, annotations, onAnnotationsChange]);
 
     const getTouchDistance = (t1, t2) => Math.sqrt(Math.pow(t1.clientX - t2.clientX, 2) + Math.pow(t1.clientY - t2.clientY, 2));
-    const getTouchMidpoint = (t1, t2, canvas, canvasRect) => {
+    const getTouchMidpoint = (t1, t2, canvas, canvasRect) => { /* ...sin cambios... */
         const clientX = (t1.clientX + t2.clientX) / 2; const clientY = (t1.clientY + t2.clientY) / 2;
         const dispX = clientX - canvasRect.left; const dispY = clientY - canvasRect.top;
         return { x: dispX * (canvas.width / canvasRect.width), y: dispY * (canvas.height / canvasRect.height) };
     };
-
-    const boundPanOffset = useCallback((newX, newY, currentZoom, canvas, imgDim) => {
+    const boundPanOffset = useCallback((newX, newY, currentZoom, canvas, imgDim) => { /* ...sin cambios... */
         if (!canvas || !imgDim || imgDim.width === 0) return { x: 0, y: 0 };
         const imgSW = imgDim.width * currentZoom; const imgSH = imgDim.height * currentZoom;
         let bX = newX; let bY = newY;
@@ -151,14 +196,13 @@ export function AnnotationTool({ imageUrl, onAnnotationsChange, existingAnnotati
         return { x: bX, y: bY };
     }, []);
 
-    // --- TOUCH EVENT HANDLERS ---
-    const handleTouchStart = useCallback((e) => {
+    const handleTouchStart = useCallback((e) => { /* ...sin cambios en su lógica de modos... */
         e.preventDefault();
         const canvas = canvasRef.current; if (!canvas) return;
         const touches = e.touches;
 
         if (interactionMode === 'annotate') {
-            if (touches.length === 1 && !touchState.isPinching) { // Evita iniciar dibujo si se está terminando un pinch
+            if (touches.length === 1 && !touchState.isPinching) {
                 internalHandleDrawStart(e);
             }
         } else if (interactionMode === 'pan') {
@@ -168,7 +212,7 @@ export function AnnotationTool({ imageUrl, onAnnotationsChange, existingAnnotati
                 const dispX = touches[0].clientX - rect.left; const dispY = touches[0].clientY - rect.top;
                 setLastPanPosition({ x: dispX * (canvas.width / rect.width), y: dispY * (canvas.height / rect.height) });
             } else if (touches.length === 2) {
-                setIsPanningWithTouch(false); // Detener paneo con un dedo si inicia pinch
+                setIsPanningWithTouch(false);
                 const rect = canvas.getBoundingClientRect();
                 const dist = getTouchDistance(touches[0], touches[1]);
                 const mid = getTouchMidpoint(touches[0], touches[1], canvas, rect);
@@ -177,7 +221,7 @@ export function AnnotationTool({ imageUrl, onAnnotationsChange, existingAnnotati
         }
     }, [interactionMode, internalHandleDrawStart, touchState.isPinching, zoomLevel, panOffset]);
 
-    const handleTouchMove = useCallback((e) => {
+    const handleTouchMove = useCallback((e) => { /* ...sin cambios en su lógica de modos... */
         e.preventDefault();
         const canvas = canvasRef.current; const imgDim = imageDimensionsRef.current;
         if (!canvas || imgDim.width === 0) return;
@@ -211,12 +255,12 @@ export function AnnotationTool({ imageUrl, onAnnotationsChange, existingAnnotati
         }
     }, [interactionMode, isDrawing, internalHandleDrawMove, isPanningWithTouch, lastPanPosition, touchState, zoomLevel, boundPanOffset]);
 
-    const handleTouchEnd = useCallback((e) => {
+    const handleTouchEnd = useCallback((e) => { /* ...sin cambios en su lógica de modos... */
         e.preventDefault();
         const wasPinching = touchState.isPinching;
 
         if (interactionMode === 'annotate') {
-            if (isDrawing && (e.touches.length === 0)) { // Solo finaliza si es el último dedo levantado
+            if (isDrawing && (e.touches.length === 0)) {
                 internalHandleDrawEnd();
             }
         } else if (interactionMode === 'pan') {
@@ -226,26 +270,23 @@ export function AnnotationTool({ imageUrl, onAnnotationsChange, existingAnnotati
             if (isPanningWithTouch && e.touches.length === 0) {
                 setIsPanningWithTouch(false); setLastPanPosition(null);
             }
-            // Transición de pinch a pan con un dedo
             if (wasPinching && e.touches.length === 1) {
                 const canvas = canvasRef.current; if (!canvas) return;
                 const rect = canvas.getBoundingClientRect(); const touch = e.touches[0];
                 const dispX = touch.clientX - rect.left; const dispY = touch.clientY - rect.top;
-                setIsPanningWithTouch(true); // Inicia paneo con el dedo restante
+                setIsPanningWithTouch(true);
                 setLastPanPosition({ x: dispX * (canvas.width / rect.width), y: dispY * (canvas.height / rect.height) });
             }
         }
-        // Limpieza general si todos los dedos se levantan
         if (e.touches.length === 0) {
-            if (isDrawing && interactionMode === 'annotate') { /* internalHandleDrawEnd ya lo manejó o lo hará */ }
-            else { setIsDrawing(false); } // Asegura que el dibujo se detenga si no está en modo anotación o fue interrumpido
-            if (currentRect && !isDrawing) setCurrentRect(null); // Limpia currentRect si el dibujo fue cancelado/no finalizado
+            if (isDrawing && interactionMode === 'annotate') { /* manejado arriba */ }
+            else { setIsDrawing(false); }
+            if (currentRect && !isDrawing) setCurrentRect(null);
         }
     }, [interactionMode, isDrawing, internalHandleDrawEnd, isPanningWithTouch, touchState, currentRect]);
 
-    // --- MOUSE EVENT HANDLERS ---
-    const handleMouseDown = useCallback((e) => {
-        if (e.button !== 0) return; // Solo botón primario
+    const handleMouseDown = useCallback((e) => { /* ...sin cambios... */
+        if (e.button !== 0) return;
         if (interactionMode === 'annotate') {
             internalHandleDrawStart(e);
         } else if (interactionMode === 'pan') {
@@ -256,8 +297,7 @@ export function AnnotationTool({ imageUrl, onAnnotationsChange, existingAnnotati
             setLastPanPosition({ x: dispX * (canvas.width / rect.width), y: dispY * (canvas.height / rect.height) });
         }
     }, [interactionMode, internalHandleDrawStart]);
-
-    const handleMouseMove = useCallback((e) => {
+    const handleMouseMove = useCallback((e) => { /* ...sin cambios... */
         const canvas = canvasRef.current; const imgDim = imageDimensionsRef.current;
         if (!canvas || imgDim.width === 0) return;
         if (interactionMode === 'annotate') {
@@ -273,24 +313,19 @@ export function AnnotationTool({ imageUrl, onAnnotationsChange, existingAnnotati
             }
         }
     }, [interactionMode, isDrawing, internalHandleDrawMove, isPanningWithMouse, lastPanPosition, zoomLevel, boundPanOffset]);
-
-    const handleMouseUpOrLeave = useCallback((e) => { // Combinado mouseup y mouseleave
+    const handleMouseUpOrLeave = useCallback((e) => { /* ...sin cambios... */
         if (interactionMode === 'annotate') {
-            if (isDrawing) internalHandleDrawEnd(e); // Pasa el evento por si es 'mouseleave'
+            if (isDrawing) internalHandleDrawEnd(e);
         } else if (interactionMode === 'pan') {
             if (isPanningWithMouse) {
                 setIsPanningWithMouse(false); setLastPanPosition(null);
             }
         }
-        // Limpieza general similar a touchEnd con 0 toques
-        if (isDrawing && interactionMode === 'annotate') { /* internalHandleDrawEnd ya lo manejó */ }
+        if (isDrawing && interactionMode === 'annotate') { /* manejado arriba */ }
         else { setIsDrawing(false); }
         if (currentRect && !isDrawing) setCurrentRect(null);
-
     }, [interactionMode, isDrawing, internalHandleDrawEnd, isPanningWithMouse, currentRect]);
-
-    // --- WHEEL ZOOM HANDLER --- (Global, no depende del modo por ahora)
-    const handleWheelZoom = useCallback((e) => {
+    const handleWheelZoom = useCallback((e) => { /* ...sin cambios... */
         e.preventDefault();
         const canvas = canvasRef.current; const imgDim = imageDimensionsRef.current;
         if (!canvas || imgDim.width === 0) return;
@@ -306,7 +341,6 @@ export function AnnotationTool({ imageUrl, onAnnotationsChange, existingAnnotati
         setPanOffset(boundPanOffset(newPanX, newPanY, newZoom, canvas, imgDim));
     }, [zoomLevel, panOffset, boundPanOffset]);
 
-    // --- ATTACHING EVENT LISTENERS ---
     useEffect(() => {
         const canvas = canvasRef.current; if (!canvas) return;
         const options = { passive: false };
@@ -332,10 +366,15 @@ export function AnnotationTool({ imageUrl, onAnnotationsChange, existingAnnotati
         };
     }, [handleMouseDown, handleMouseMove, handleMouseUpOrLeave, handleTouchStart, handleTouchMove, handleTouchEnd, handleWheelZoom]);
 
-    const clearLastAnnotation = () => { if (annotations.length > 0) { const newAnnos = annotations.slice(0, -1); setAnnotations(newAnnos); onAnnotationsChange(newAnnos); } };
-    const clearAllAnnotations = () => { setAnnotations([]); onAnnotationsChange([]); };
+    const clearLastAnnotation = () => {
+        if (annotations.length > 0) { const newAnnos = annotations.slice(0, -1); setAnnotations(newAnnos); onAnnotationsChange(newAnnos); }
+    };
+    const clearAllAnnotations = () => {
+        setAnnotations([]); onAnnotationsChange([]);
+    };
 
     if (!imageUrl) return null;
+
 
     return (
         <div style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', touchAction: 'none', overflow: 'hidden' }}>
@@ -350,54 +389,46 @@ export function AnnotationTool({ imageUrl, onAnnotationsChange, existingAnnotati
             />
 
             {/* Botones de cambio de modo */}
-            <div style={{ position: 'absolute', top: '10px', left: '10px', zIndex: 20, display: 'flex', gap: '5px', background: 'rgba(255,255,255,0.8)', padding: '5px', borderRadius: '5px' }}>
-                <button
-                    type="button" // <-- AÑADIDO
+            <div style={{ position: 'absolute', top: '10px', left: '10px', zIndex: 20, display: 'flex', gap: '16px', background: 'rgba(255,255,255,0.8)', padding: '5px', borderRadius: '16px' }} className='text-xl'>
+
+                <Button
+                    type="button"
                     onClick={() => handleModeChange('annotate')}
-                    style={{
-                        padding: '8px 12px',
-                        border: interactionMode === 'annotate' ? '2px solid blue' : '1px solid grey',
-                        borderRadius: '4px',
-                        background: interactionMode === 'annotate' ? '#e0e0ff' : 'white',
-                        cursor: 'pointer'
-                    }}
+                    variant="outline"
+                    size="sm"
+                    className={interactionMode === 'annotate' ? 'bg-blue-500 text-white' : ''}
                 >
                     Anotar
-                </button>
-                <button
-                    type="button" // <-- AÑADIDO
+                </Button>
+                <Button
+                    type="button"
                     onClick={() => handleModeChange('pan')}
-                    style={{
-                        padding: '8px 12px',
-                        border: interactionMode === 'pan' ? '2px solid blue' : '1px solid grey',
-                        borderRadius: '4px',
-                        background: interactionMode === 'pan' ? '#e0e0ff' : 'white',
-                        cursor: 'pointer'
-                    }}
+                    variant="outline"
+                    size="sm"
+                    className={interactionMode === 'pan' ? 'bg-blue-500 text-white' : ''}
                 >
                     Mover/Zoom
-                </button>
-            </div>
+                </Button>
 
-            {/* Botones de acción de anotación */}
-            <div style={{ position: 'absolute', bottom: '10px', left: '10px', background: 'rgba(255,255,255,0.8)', padding: '8px', zIndex: 10, display: 'flex', gap: '10px', borderRadius: '36px' }}>
-                <button
-                    type="button" // <-- AÑADIDO
+                <Button
+                    type="button"
                     onClick={clearLastAnnotation}
-                    disabled={annotations.length === 0}
-                    style={{ cursor: 'pointer' }}
+                    variant="outline"
+                    size="sm"
                 >
                     Deshacer
-                </button>
-                <button
-                    type="button" // <-- AÑADIDO
+                </Button>
+                <Button
+                    type="button"
                     onClick={clearAllAnnotations}
-                    disabled={annotations.length === 0}
-                    style={{ cursor: 'pointer' }}
+                    variant="outline"
+                    size="sm"
                 >
                     Limpiar
-                </button>
+                </Button>
             </div>
+
         </div>
     );
 }
+

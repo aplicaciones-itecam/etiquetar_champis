@@ -282,7 +282,7 @@ export function FormChampi() {
 
                 <div>
                     <label htmlFor="imageUpload" className="block text-sm font-medium text-gray-700 mb-1">
-                        Imagen (Opcional)
+                        Imagen
                     </label>
                     <input
                         type="file"
