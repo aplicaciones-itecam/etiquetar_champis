@@ -5,4 +5,6 @@ export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs))
 }
 
-export const API_URL_BASE = `http://192.168.15.12:8001`
+/* export const API_URL_BASE = `http://192.168.15.12:8001` */
+export const API_URL_BASE = `http://172.20.10.4:8000`
+/* export const API_URL_BASE = `http://localhost:8000` */

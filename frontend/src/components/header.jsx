@@ -23,14 +23,7 @@ import {
 
 import logo from "@/assets/logo.png"
 
-export default function StickyHeader({
-    user = {
-        name: "Ana García",
-        email: "ana.garcia@empresa.com",
-        avatar: "/placeholder.svg?height=32&width=32",
-        role: "Project Manager",
-    },
-}) {
+export default function StickyHeader() {
     const [isDarkMode, setIsDarkMode] = useState(false)
     const [notifications] = useState(3)
 

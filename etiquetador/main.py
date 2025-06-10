@@ -5,24 +5,41 @@ from contextlib import asynccontextmanager
 from routes.champi import router as champi_router
 from routes.hola import router as hola_router
 
+import utils.logger as logger
+from fastapi.exceptions import RequestValidationError
+from fastapi.responses import JSONResponse
+from starlette.exceptions import HTTPException as StarletteHTTPException
+import traceback
+app = FastAPI()
 
-# Ejecutar cosas durante el arranque
-@asynccontextmanager
-async def lifespan(app: FastAPI):
-        db = session_local()
-        async with engine.begin() as conn:
-            await conn.run_sync(Base.metadata.create_all)
-                # await load_data_puesto(db)
-                # await load_data_estado_proyecto(db)
-                # await load_data_avance(db)
-                # await load_data_linea_servicio(db)
-                # await load_data_prioridad(db)
-                # create_task(ejecutar_periodicamente(CARGA_CLIENTES, load_data_cliente, db))
-        yield
-app = FastAPI(lifespan = lifespan)
+app.exception_handler(StarletteHTTPException)
+async def http_exception_handler(request, exc):
+    logger.error(f"HTTP error: {exc.detail}")
+    return JSONResponse(
+        status_code=exc.status_code,
+        content={"detail": exc.detail},
+    )
+
+app.exception_handler(RequestValidationError)
+async def validation_exception_handler(request, exc):
+    error_details = str(exc)
+    logger.error(f"Validation error: {error_details}")
+    return JSONResponse(
+        status_code=422,
+        content={"detail": "Datos de entrada inválidos", "errors": exc.errors()},
+    )
+
+app.exception_handler(Exception)
+async def general_exception_handler(request, exc):
+    error_details = traceback.format_exc()
+    logger.critical(f"Unhandled exception: {str(exc)}\n{error_details}")
+    return JSONResponse(
+        status_code=500,
+        content={"detail": "Error interno del servidor"},
+    )
 
 #Crear instancia de fastapi
-app = FastAPI()
+
 # Añadimos la configuración de CORS
 cors.add(app)
 

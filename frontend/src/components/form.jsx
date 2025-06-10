@@ -13,6 +13,7 @@ import {
 import { ImageDisplay } from './image/image-capture';
 import { AnnotationTool } from './image/image-annotation';
 import useImageAnnotation from '@/hooks/useImageAnnotation';
+import { API_URL_BASE } from '@/lib/utils'
 
 const formSchema = z.object({
     diaEntrada: z.string().min(1, "El día de entrada es requerido."),
@@ -31,6 +32,7 @@ const formSchema = z.object({
 const today = new Date();
 
 export function FormChampi() {
+
     const form = useForm({
         resolver: zodResolver(formSchema),
         defaultValues: {
@@ -58,6 +60,7 @@ export function FormChampi() {
     } = useImageAnnotation();
 
     const [isFullscreen, setIsFullscreen] = useState(false);
+    const [isSubmitting, setIsSubmitting] = useState(false);
     const annotationSectionRef = useRef(null);
     const isSafeNavigationRef = useRef(false); // Ref para controlar la recarga segura
 
@@ -173,36 +176,33 @@ export function FormChampi() {
 
 
     async function onSubmit(data) {
-        let pureBase64 = "";
-        if (originalImage) {
-            const parts = originalImage.split(',');
-            if (parts.length === 2 && parts[0].startsWith('data:image') && parts[0].includes('base64')) {
-                pureBase64 = parts[1];
-            } else {
-                console.error("originalImage no es una Data URL Base64 válida.");
-                alert("La imagen original no es válida. Por favor, vuelve a seleccionarla.");
-                return;
-            }
-        } else {
-            // Permitir envío sin imagen si es opcional, o mostrar alerta si es requerida
-            // Para este ejemplo, si no hay imagen, pureBase64 quedará vacío.
-            // Si la imagen fuera requerida, aquí deberías añadir:
-            // alert("Por favor, selecciona una imagen.");
-            // return;
-        }
-
-        const payload = {
-            ...data,
-            annotatedImageFile: pureBase64, // Puede estar vacío si no hay imagen
-            annotations: currentAnnotations
-                ? currentAnnotations.map(ann => ann.coordsLLM)
-                : [],
-        };
-
-        console.log("Payload a enviar (JSON):", payload);
+        setIsSubmitting(true);
 
         try {
-            const response = await fetch('http://192.168.15.12:8000/upload-image/', {
+            let pureBase64 = "";
+            if (originalImage) {
+                const parts = originalImage.split(',');
+                if (parts.length === 2 && parts[0].startsWith('data:image') && parts[0].includes('base64')) {
+                    pureBase64 = parts[1];
+                } else {
+                    console.error("originalImage no es una Data URL Base64 válida.");
+                    alert("La imagen original no es válida. Por favor, vuelve a seleccionarla.");
+                    setIsSubmitting(false);
+                    return;
+                }
+            }
+
+            const payload = {
+                ...data,
+                annotatedImageFile: pureBase64,
+                annotations: currentAnnotations
+                    ? currentAnnotations.map(ann => ann.coordsLLM)
+                    : [],
+            };
+
+            console.log("Payload a enviar (JSON):", payload);
+
+            const response = await fetch(`${API_URL_BASE}/upload-image/`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json', },
                 body: JSON.stringify(payload),
@@ -217,7 +217,6 @@ export function FormChampi() {
             console.log('Respuesta de la API:', result);
             alert("¡Formulario enviado con éxito!");
 
-
             form.reset();
             setOriginalImage(null);
             setAnnotations([]);
@@ -225,11 +224,12 @@ export function FormChampi() {
             // Marca la navegación como segura ANTES de recargar
             isSafeNavigationRef.current = true;
             location.reload();
-
         } catch (error) {
             console.error('Error al enviar el formulario:', error);
             alert(`Error al enviar el formulario: ${error.message}`);
-            isSafeNavigationRef.current = false; // Asegura que se resetee en caso de error
+            isSafeNavigationRef.current = false;
+        } finally {
+            setIsSubmitting(false);
         }
     }
 
@@ -318,7 +318,19 @@ export function FormChampi() {
                 <AppInput form={form} name="circulacion" label="Circulación" type="number" placeholder="Ej: 100" />
                 <AppTextarea form={form} name="observaciones" label="Observaciones" placeholder="Añade tus observaciones aquí..." />
 
-                <Button type="submit">Guardar registro</Button>
+                <Button type="submit" disabled={isSubmitting}>
+                    {isSubmitting ? (
+                        <>
+                            <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                            </svg>
+                            Guardando...
+                        </>
+                    ) : (
+                        "Guardar registro"
+                    )}
+                </Button>
             </form>
         </Form>
     );
