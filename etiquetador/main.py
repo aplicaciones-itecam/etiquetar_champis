@@ -9,6 +9,7 @@ import utils.logger as logger
 from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
 from starlette.exceptions import HTTPException as StarletteHTTPException
+from fastapi.staticfiles import StaticFiles
 import traceback
 app = FastAPI()
 
@@ -46,7 +47,7 @@ cors.add(app)
 # Incluir las routes
 app.include_router(champi_router)
 app.include_router(hola_router)
-
+app.mount("/dataset", StaticFiles(directory="dataset"), name="dataset")
 
 
 if __name__ == "__main__":

@@ -241,97 +241,100 @@ export function FormChampi() {
     })), []);
 
     return (
-        <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 p-4">
-                <AppInput form={form} name="diaEntrada" label="Día de entrada" type="date" />
-                <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-                    <div>
-                        <label htmlFor="sala-select" className="flex items-center gap-2 text-sm leading-none font-medium mb-2">
-                            Sala
-                        </label>
-                        <select id="sala-select" className="border rounded-md p-2 w-full" {...form.register("sala")}>
-                            <option value="">Seleccione una sala</option>
-                            {salasArray.map((sala) => (
-                                <option key={sala.value} value={sala.value}>
-                                    {sala.label}
-                                </option>
-                            ))}
-                        </select>
-                        {form.formState.errors.sala && <p className="text-destructive text-sm mt-1">{form.formState.errors.sala.message}</p>}
-                    </div>
-                    <div>
-                        <label htmlFor="muestra-select" className="flex items-center gap-2 text-sm leading-none font-medium mb-2">
-                            Muestra
-                        </label>
-                        <select id="muestra-select" className="border rounded-md p-2 w-full" {...form.register("muestra")}>
-                            <option value="">Seleccione una muestra</option>
-                            {muestrasArray.map((muestra) => (
-                                <option key={muestra.value} value={muestra.value}>
-                                    {muestra.label}
-                                </option>
-                            ))}
-                        </select>
-                        {form.formState.errors.muestra && <p className="text-destructive text-sm mt-1">{form.formState.errors.muestra.message}</p>}
-                    </div>
-                </div>
-
-                <div className="grid grid-cols-2 gap-4">
-                    <AppInput form={form} name="fecha" label="Fecha" type="date" />
-                    <AppInput form={form} name="hora" label="Hora" type="time" />
-                </div>
-
-                <div>
-                    <label htmlFor="imageUpload" className="block text-sm font-medium text-gray-700 mb-1">
-                        Imagen
-                    </label>
-                    <input
-                        type="file"
-                        id="imageUpload"
-                        accept="image/*"
-                        onChange={handleFileSelected}
-                        className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
-                    />
-                </div>
-
-                {originalImage && (
-                    <div ref={annotationSectionRef} className={`my-4 border rounded-md p-2 ${isFullscreen ? 'bg-white fixed inset-0 z-[100] overflow-auto' : ''}`}> {/* Aumentado z-index para fullscreen */}
-                        <div className="flex justify-between items-center mb-2">
-                            <p className="text-sm font-medium">Anotar Imagen:</p>
-                            <Button type="button" onClick={toggleFullscreen} variant="outline" size="sm">
-                                {isFullscreen ? 'Salir de Pantalla Completa' : 'Pantalla Completa'}
-                            </Button>
+        <>
+            <h2 className="text-lg font-semibold">Toma datos</h2>
+            <Form {...form}>
+                <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 p-4">
+                    <AppInput form={form} name="diaEntrada" label="Día de entrada" type="date" />
+                    <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                        <div>
+                            <label htmlFor="sala-select" className="flex items-center gap-2 text-sm leading-none font-medium mb-2">
+                                Sala
+                            </label>
+                            <select id="sala-select" className="border rounded-md p-2 w-full" {...form.register("sala")}>
+                                <option value="">Seleccione una sala</option>
+                                {salasArray.map((sala) => (
+                                    <option key={sala.value} value={sala.value}>
+                                        {sala.label}
+                                    </option>
+                                ))}
+                            </select>
+                            {form.formState.errors.sala && <p className="text-destructive text-sm mt-1">{form.formState.errors.sala.message}</p>}
                         </div>
-                        <ImageDisplay imageUrl={originalImage}>
-                            <AnnotationTool
-                                imageUrl={originalImage}
-                                onAnnotationsChange={handleAnnotationsChangeCallback}
-                                existingAnnotations={currentAnnotations}
-                            />
-                        </ImageDisplay>
+                        <div>
+                            <label htmlFor="muestra-select" className="flex items-center gap-2 text-sm leading-none font-medium mb-2">
+                                Muestra
+                            </label>
+                            <select id="muestra-select" className="border rounded-md p-2 w-full" {...form.register("muestra")}>
+                                <option value="">Seleccione una muestra</option>
+                                {muestrasArray.map((muestra) => (
+                                    <option key={muestra.value} value={muestra.value}>
+                                        {muestra.label}
+                                    </option>
+                                ))}
+                            </select>
+                            {form.formState.errors.muestra && <p className="text-destructive text-sm mt-1">{form.formState.errors.muestra.message}</p>}
+                        </div>
                     </div>
-                )}
 
-                <AppInput form={form} name="tempCompost" label="Temperatura Compost (ºC)" type="number" step="0.1" placeholder="Ej: 25.5" />
-                <AppInput form={form} name="tempAmbiente" label="Temperatura Ambiente (ºC)" type="number" step="0.1" placeholder="Ej: 22.0" />
-                <AppInput form={form} name="humedad" label="Humedad (%)" type="number" step="0.1" placeholder="Ej: 85.0" />
-                <AppInput form={form} name="co2" label="CO2 (PPM)" type="number" placeholder="Ej: 800" />
-                <AppInput form={form} name="circulacion" label="Circulación" type="number" placeholder="Ej: 100" />
-                <AppTextarea form={form} name="observaciones" label="Observaciones" placeholder="Añade tus observaciones aquí..." />
+                    <div className="grid grid-cols-2 gap-4">
+                        <AppInput form={form} name="fecha" label="Fecha" type="date" />
+                        <AppInput form={form} name="hora" label="Hora" type="time" />
+                    </div>
 
-                <Button type="submit" disabled={isSubmitting}>
-                    {isSubmitting ? (
-                        <>
-                            <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                            </svg>
-                            Guardando...
-                        </>
-                    ) : (
-                        "Guardar registro"
+                    <div>
+                        <label htmlFor="imageUpload" className="block text-sm font-medium text-gray-700 mb-1">
+                            Imagen
+                        </label>
+                        <input
+                            type="file"
+                            id="imageUpload"
+                            accept="image/*"
+                            onChange={handleFileSelected}
+                            className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
+                        />
+                    </div>
+
+                    {originalImage && (
+                        <div ref={annotationSectionRef} className={`my-4 border rounded-md p-2 ${isFullscreen ? 'bg-white fixed inset-0 z-[100] overflow-auto' : ''}`}> {/* Aumentado z-index para fullscreen */}
+                            <div className="flex justify-between items-center mb-2">
+                                <p className="text-sm font-medium">Anotar Imagen:</p>
+                                <Button type="button" onClick={toggleFullscreen} variant="outline" size="sm">
+                                    {isFullscreen ? 'Salir de Pantalla Completa' : 'Pantalla Completa'}
+                                </Button>
+                            </div>
+                            <ImageDisplay imageUrl={originalImage}>
+                                <AnnotationTool
+                                    imageUrl={originalImage}
+                                    onAnnotationsChange={handleAnnotationsChangeCallback}
+                                    existingAnnotations={currentAnnotations}
+                                />
+                            </ImageDisplay>
+                        </div>
                     )}
-                </Button>
-            </form>
-        </Form>
+
+                    <AppInput form={form} name="tempCompost" label="Temperatura Compost (ºC)" type="number" step="0.1" placeholder="Ej: 25.5" />
+                    <AppInput form={form} name="tempAmbiente" label="Temperatura Ambiente (ºC)" type="number" step="0.1" placeholder="Ej: 22.0" />
+                    <AppInput form={form} name="humedad" label="Humedad (%)" type="number" step="0.1" placeholder="Ej: 85.0" />
+                    <AppInput form={form} name="co2" label="CO2 (PPM)" type="number" placeholder="Ej: 800" />
+                    <AppInput form={form} name="circulacion" label="Circulación" type="number" placeholder="Ej: 100" />
+                    <AppTextarea form={form} name="observaciones" label="Observaciones" placeholder="Añade tus observaciones aquí..." />
+
+                    <Button type="submit" disabled={isSubmitting}>
+                        {isSubmitting ? (
+                            <>
+                                <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                </svg>
+                                Guardando...
+                            </>
+                        ) : (
+                            "Guardar registro"
+                        )}
+                    </Button>
+                </form>
+            </Form>
+        </>
     );
 }

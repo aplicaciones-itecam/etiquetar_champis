@@ -86,17 +86,18 @@ async def upload_image(payload: AnnotatedImage):
         try:
             image_data = base64.b64decode(payload.annotatedImageFile)
             image = Image.open(io.BytesIO(image_data))
+            image = image.convert("RGB") 
             img_width, img_height = image.size
             logger.debug(f"Successfully decoded image, dimensions: {img_width}x{img_height}")
         except Exception as e:
             logger.error(f"Failed to decode image: {str(e)}")
             raise ValueError("Invalid image data provided")
 
-        image_filename = f"{uuid}.png"
+        image_filename = f"{uuid}.webp"
         image_path = join(IMAGES_DIR, image_filename)
         
         try:
-            image.save(image_path)
+            image.save(image_path, 'webp')
             logger.debug(f"Image saved to {image_path}")
         except Exception as e:
             logger.error(f"Failed to save image: {str(e)}")
@@ -186,6 +187,138 @@ async def upload_image(payload: AnnotatedImage):
         error_details = traceback.format_exc()
         logger.error(f"Error processing image upload: {str(e)}\n{error_details}")
         raise HTTPException(status_code=400, detail=str(e))
+
+@router.get("/images/")
+async def get_images():
+    """Obtener la lista de todas las imágenes con sus datos"""
+    import os
+    import json
+    
+    try:
+        result = []
+        error_files = []
+        
+        # Leer todos los archivos JSON en el directorio de datos
+        for filename in os.listdir(DATOS_DIR):
+            if filename.endswith('.json'):
+                file_id = filename.split('.')[0]  # UUID sin extensión
+                
+                # Ruta del archivo JSON y la imagen correspondiente
+                json_path = join(DATOS_DIR, filename)
+                image_path = join(IMAGES_DIR, f"{file_id}.webp")
+                
+                # Verificar si la imagen existe
+                if not os.path.exists(image_path):
+                    continue
+                
+                # Cargar datos del JSON con manejo de errores
+                try:
+                    with open(json_path, 'r') as f:
+                        data = json.load(f)
+                except json.JSONDecodeError as je:
+                    # Registrar el archivo con error y continuar con el siguiente
+                    error_files.append({"file": filename, "error": str(je)})
+                    print(f"Error en archivo JSON {filename}: {je}")
+                    continue
+                
+                # Crear estructura de respuesta
+                record = {
+                    "id": file_id,
+                    "imageUrl": f"/dataset/images/{file_id}.webp",
+                    "sala": data.get("sala", ""),
+                    "muestra": data.get("muestra", ""),
+                    "fecha": data.get("fecha", ""),
+                    "hora": data.get("hora", ""),
+                    "tempCompost": data.get("temp_compost"),
+                    "tempAmbiente": data.get("temperatura"),
+                    "humedad": data.get("humedad"),
+                    "co2": data.get("co2"),
+                    "circulacion": data.get("circulacion"),
+                    "observaciones": data.get("observaciones"),
+                    "annotations": []
+                }
+                
+                # Procesar anotaciones
+                if "annotations" in data:
+                    for ann in data["annotations"]:
+                        if "points" in ann and len(ann["points"]) == 2:
+                            p1 = ann["points"][0]
+                            p2 = ann["points"][1]
+                            
+                            # Calcular coordenadas relativas (x, y, ancho, alto)
+                            x = min(p1["x"], p2["x"])
+                            y = min(p1["y"], p2["y"])
+                            width = abs(p2["x"] - p1["x"])
+                            height = abs(p2["y"] - p1["y"])
+                            
+                            record["annotations"].append([x, y, width, height])
+                
+                result.append(record)
+        
+        # Si hay archivos con error, incluirlo en los registros de la aplicación
+        if error_files:
+            print(f"Encontrados {len(error_files)} archivos JSON con errores: {error_files}")
+        
+        return result
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error al obtener imágenes: {str(e)}")
+
+@router.get("/images/{image_id}")
+async def get_image(image_id: str):
+    """Obtener los datos de una imagen específica por ID"""
+    import os
+    import json
+    
+    try:
+        # Ruta del archivo JSON y la imagen
+        json_path = join(DATOS_DIR, f"{image_id}.json")
+        image_path = join(IMAGES_DIR, f"{image_id}.webp")
+        
+        # Verificar si los archivos existen
+        if not os.path.exists(json_path) or not os.path.exists(image_path):
+            raise HTTPException(status_code=404, detail=f"Imagen con ID {image_id} no encontrada")
+        
+        # Cargar datos del JSON
+        with open(json_path, 'r') as f:
+            data = json.load(f)
+        
+        # Crear estructura de respuesta
+        record = {
+            "id": image_id,
+            "imageUrl": f"/dataset/images/{image_id}.webp",
+            "sala": data.get("sala", ""),
+            "muestra": data.get("muestra", ""),
+            "fecha": data.get("fecha", ""),
+            "hora": data.get("hora", ""),
+            "tempCompost": data.get("temp_compost"),
+            "tempAmbiente": data.get("temperatura"),
+            "humedad": data.get("humedad"),
+            "co2": data.get("co2"),
+            "circulacion": data.get("circulacion"),
+            "observaciones": data.get("observaciones"),
+            "annotations": []
+        }
+        
+        # Procesar anotaciones
+        if "annotations" in data:
+            for ann in data["annotations"]:
+                if "points" in ann and len(ann["points"]) == 2:
+                    p1 = ann["points"][0]
+                    p2 = ann["points"][1]
+                    
+                    # Calcular coordenadas relativas (x, y, ancho, alto)
+                    x = min(p1["x"], p2["x"])
+                    y = min(p1["y"], p2["y"])
+                    width = abs(p2["x"] - p1["x"])
+                    height = abs(p2["y"] - p1["y"])
+                    
+                    record["annotations"].append([x, y, width, height])
+        
+        return record
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error al obtener imagen: {str(e)}")
 
 @router.post("/log/")
 async def log_error(log_entry: LogEntry):

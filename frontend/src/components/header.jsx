@@ -2,23 +2,14 @@
 
 import { useState } from "react"
 import { Button } from "@/components/ui/button"
+import { Link } from "react-router"
 import { Input } from "@/components/ui/input"
 
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet"
 import {
-    Search,
-    Bell,
-    Settings,
-    User,
-    LogOut,
     Menu,
     Home,
-    Users,
-    FolderOpen,
-    Calendar,
-    BarChart3,
-    Moon,
-    Sun,
+    History
 } from "lucide-react"
 
 import logo from "@/assets/logo.png"
@@ -29,6 +20,7 @@ export default function StickyHeader() {
 
     const navigationItems = [
         { name: "Inicio", href: "/", icon: Home },
+        { name: "Historial", href: "/historial", icon: History },
     ]
 
     const getInitials = (name) => {
@@ -58,8 +50,10 @@ export default function StickyHeader() {
                                     size="sm"
                                     className="flex items-center gap-2 text-muted-foreground hover:text-foreground"
                                 >
-                                    <item.icon className="h-4 w-4" />
-                                    {item.name}
+                                    <Link to={item.href} className="flex items-center gap-2">
+                                        <item.icon className="h-4 w-4" />
+                                        {item.name}
+                                    </Link>
                                 </Button>
                             ))}
                         </nav>
@@ -89,8 +83,10 @@ export default function StickyHeader() {
                                     <nav className="space-y-2">
                                         {navigationItems.map((item) => (
                                             <Button key={item.name} variant="ghost" className="w-full justify-start gap-2">
-                                                <item.icon className="h-4 w-4" />
-                                                {item.name}
+                                                <Link to={item.href} className="flex items-center gap-2">
+                                                    <item.icon className="h-4 w-4" />
+                                                    {item.name}
+                                                </Link>
                                             </Button>
                                         ))}
                                     </nav>
