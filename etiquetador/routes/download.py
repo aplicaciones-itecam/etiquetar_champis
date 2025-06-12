@@ -15,8 +15,11 @@ DATASET_DIR = "dataset"
 
 # (La función _generate_excel_in_memory sigue siendo la misma que en mi respuesta anterior)
 def _generate_excel_in_memory() -> io.BytesIO:
-    # ... (código para generar el Excel en memoria, sin cambios)
-    logger.info("Generando datos de Excel en memoria.")
+    """
+    Genera el fichero Excel con los metadatos de cada fichero del dataset en memoria.
+    Se ignora la información detallada de las anotaciones.
+    """
+    logger.info("Generando datos de Excel en memoria (sin detalles de anotación).")
     
     processed_data: List[Dict[str, Any]] = []
     malformed_files: List[str] = []
@@ -33,11 +36,8 @@ def _generate_excel_in_memory() -> io.BytesIO:
                     with open(file_path, 'r', encoding='utf-8') as f:
                         data = json.load(f)
                     
-                    annotations = data.get("anotaciones")
-                    if annotations is None:
-                        annotations = data.get("annotations", [])
-
-                    base_row = {
+                    # Se crea una única fila por fichero, ignorando las anotaciones.
+                    row = {
                         "nombre_archivo": data.get("nombre", filename),
                         "dia_entrada": data.get("dia_entrada"),
                         "fecha": data.get("fecha"),
@@ -53,30 +53,7 @@ def _generate_excel_in_memory() -> io.BytesIO:
                         "estado": data.get("estado"),
                         "comentarios": data.get("comentarios"),
                     }
-
-                    if not annotations:
-                        processed_data.append(base_row)
-                    else:
-                        for anotacion in annotations:
-                            row = base_row.copy()
-                            bbox = anotacion.get("bbox")
-                            if bbox is None:
-                                points = anotacion.get("points")
-                                if points and len(points) == 2:
-                                    x1, y1 = points[0]['x'], points[0]['y']
-                                    x2, y2 = points[1]['x'], points[1]['y']
-                                    bbox = [x1, y1, x2 - x1, y2 - y1]
-                                else:
-                                    bbox = [None, None, None, None]
-                            
-                            row.update({
-                                "label_anotacion": anotacion.get("label"),
-                                "bbox_x": bbox[0],
-                                "bbox_y": bbox[1],
-                                "bbox_width": bbox[2],
-                                "bbox_height": bbox[3],
-                            })
-                            processed_data.append(row)
+                    processed_data.append(row)
                             
                 except json.JSONDecodeError:
                     logger.warning(f"Omitiendo fichero JSON mal formado: {filename}")
@@ -89,7 +66,7 @@ def _generate_excel_in_memory() -> io.BytesIO:
 
     excel_buffer = io.BytesIO()
     with pd.ExcelWriter(excel_buffer, engine='openpyxl') as writer:
-        df.to_excel(writer, index=False, sheet_name="Anotaciones")
+        df.to_excel(writer, index=False, sheet_name="Resumen_Muestras")
         if malformed_files:
             pd.DataFrame({"archivos_omitidos": malformed_files}).to_excel(writer, index=False, sheet_name="Archivos Omitidos")
 
