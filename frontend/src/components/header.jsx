@@ -9,10 +9,21 @@ import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTr
 import {
     Menu,
     Home,
-    History
+    History,
+    Download
 } from "lucide-react"
 
 import logo from "@/assets/logo.png"
+
+import {
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuLabel,
+    DropdownMenuSeparator,
+    DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
+import { API_URL_BASE } from '@/lib/utils'
 
 export default function StickyHeader() {
     const [isDarkMode, setIsDarkMode] = useState(false)
@@ -30,6 +41,9 @@ export default function StickyHeader() {
             .join("")
             .toUpperCase()
     }
+
+    const downloadUrl = `${API_URL_BASE}/download/dataset`;
+    const downloadExcelUrl = `${API_URL_BASE}/download/dataset/report`;
 
     return (
         <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
@@ -56,6 +70,27 @@ export default function StickyHeader() {
                                     </Link>
                                 </Button>
                             ))}
+
+                            <DropdownMenu>
+                                <DropdownMenuTrigger asChild>
+                                    <Button variant="ghost" size="sm" className="flex items-center gap-2">
+                                        <Download />
+                                        <span>Descargar</span>
+                                    </Button>
+                                </DropdownMenuTrigger>
+                                <DropdownMenuContent>
+                                    <DropdownMenuItem asChild>
+                                        <a href={downloadUrl} className="flex items-center gap-2">
+                                            Dataset
+                                        </a>
+                                    </DropdownMenuItem>
+                                    <DropdownMenuItem asChild>
+                                        <a href={downloadExcelUrl} className="flex items-center gap-2">
+                                            Excel
+                                        </a>
+                                    </DropdownMenuItem>
+                                </DropdownMenuContent>
+                            </DropdownMenu>
                         </nav>
                     </div>
 

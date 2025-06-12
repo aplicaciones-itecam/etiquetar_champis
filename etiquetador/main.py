@@ -4,6 +4,7 @@ from asyncio import create_task
 from contextlib import asynccontextmanager
 from routes.champi import router as champi_router
 from routes.hola import router as hola_router
+from routes.download import router as download_router
 
 import utils.logger as logger
 from fastapi.exceptions import RequestValidationError
@@ -47,6 +48,7 @@ cors.add(app)
 # Incluir las routes
 app.include_router(champi_router)
 app.include_router(hola_router)
+app.include_router(download_router)
 app.mount("/dataset", StaticFiles(directory="dataset"), name="dataset")
 
 
