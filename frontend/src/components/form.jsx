@@ -221,9 +221,6 @@ export function FormChampi() {
             setOriginalImage(null);
             setAnnotations([]);
 
-            // Marca la navegación como segura ANTES de recargar
-            isSafeNavigationRef.current = true;
-            location.reload();
         } catch (error) {
             console.error('Error al enviar el formulario:', error);
             alert(`Error al enviar el formulario: ${error.message}`);
