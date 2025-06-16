@@ -1,5 +1,5 @@
 
-import { Outlet } from "react-router";
+import { Outlet } from "react-router-dom";
 import { ErrorBoundary } from "@/errors/error-boundary";
 import StickyHeader from "@/components/header";
 

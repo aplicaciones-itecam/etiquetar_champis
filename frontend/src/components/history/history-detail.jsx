@@ -1,10 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { useParams } from 'react-router';
+import { useParams, Link } from 'react-router-dom';
 import { API_URL_BASE } from '@/lib/utils'
 import { fetcher } from '@/lib/fetcher';
 import useSWR from "swr"
 import { AnnotationViewer } from '@/components/image/annotation-viewer';
-import { Link } from 'react-router';
 
 export function HistoryDetail() {
     const { historyId } = useParams();

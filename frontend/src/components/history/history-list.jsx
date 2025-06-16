@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Link } from 'react-router';
+import { Link } from 'react-router-dom';
 import { API_URL_BASE } from '@/lib/utils'
 import { fetcher } from '@/lib/fetcher';
 import useSWR from "swr"
