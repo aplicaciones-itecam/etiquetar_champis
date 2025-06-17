@@ -20,6 +20,7 @@ export function HistoryDetail() {
     }
     if (!data || data.length === 0) return <div>No se han encontrado registros</div>
 
+    console.log(data)
 
     return (
         <div>
@@ -65,15 +66,22 @@ export function HistoryDetail() {
 
                                 {data.fecha && (
                                     <>
-                                        <dt className="text-gray-600">Fecha:</dt>
-                                        <dd className="font-medium">{new Date(data.fecha).toLocaleDateString()}</dd>
+                                        <dt className="text-gray-600">Fecha y hora muestra:</dt>
+                                        <dd className="font-medium">{new Date(data.fecha).toLocaleDateString()} {data.hora}</dd>
                                     </>
                                 )}
 
                                 {data.hora && (
                                     <>
-                                        <dt className="text-gray-600">Hora:</dt>
-                                        <dd className="font-medium">{data.hora}</dd>
+                                        <dt className="text-gray-600">Fecha cultivo:</dt>
+                                        <dd className="font-medium">{new Date(data.diaEntrada).toLocaleDateString()}</dd>
+                                    </>
+                                )}
+
+                                {data.hora && (
+                                    <>
+                                        <dt className="text-gray-600">Días transcurridos desde cultivo:</dt>
+                                        <dd className="font-medium">{Math.floor((new Date(data.fecha) - new Date(data.diaEntrada)) / (1000 * 60 * 60 * 24))} días</dd>
                                     </>
                                 )}
 

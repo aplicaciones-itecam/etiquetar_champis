@@ -31,12 +31,21 @@ export function HistoryList() {
                                 <span className="bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded-lg">
                                     {new Date(record.fecha).toLocaleDateString() || "Sin fecha"}
                                 </span>
+                                <span className="bg-green-100 text-green-800 text-xs px-2 py-1 rounded-lg">
+                                    {Math.floor((new Date(record.fecha) - new Date(record.diaEntrada)) / (1000 * 60 * 60 * 24))}º día
+                                </span>
                             </div>
                             <div className="text-sm text-gray-600">
-                                {record.tempCompost && <p>Temp: {record.tempCompost}°C</p>}
-                                {record.humedad && <p>Humedad: {record.humedad}%</p>}
-                                {record.observaciones && (
-                                    <p className="truncate">{record.observaciones}</p>
+                                {record.tempAmbiente ? (
+                                    <>
+                                        {record.tempAmbiente && <p>Tª: {record.tempAmbiente}°C</p>}
+                                        {record.humedad && <p>Humedad: {record.humedad}%</p>}
+                                        {record.observaciones && (
+                                            <p className="truncate">Notas: {record.observaciones}</p>
+                                        )}
+                                    </>
+                                ) : (
+                                    <p>No hay datos disponibles</p>
                                 )}
                             </div>
                         </div>
