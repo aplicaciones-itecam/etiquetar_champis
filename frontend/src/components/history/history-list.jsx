@@ -29,7 +29,7 @@ export function HistoryList() {
                             <div className="flex justify-between items-start mb-2">
                                 <h3 className="font-semibold">Sala {record.sala}, Muestra {record.muestra}</h3>
                                 <span className="bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded-lg">
-                                    {new Date(record.fecha).toLocaleDateString() || "Sin fecha"}
+                                    {`${new Date(record.fecha).toLocaleDateString()} ${record.hora}` || "Sin fecha"}
                                 </span>
                                 <span className="bg-green-100 text-green-800 text-xs px-2 py-1 rounded-lg">
                                     {Math.floor((new Date(record.fecha) - new Date(record.diaEntrada)) / (1000 * 60 * 60 * 24))}º día
