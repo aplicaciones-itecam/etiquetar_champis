@@ -62,7 +62,8 @@ export function FormChampi() {
     const [isFullscreen, setIsFullscreen] = useState(false);
     const [isSubmitting, setIsSubmitting] = useState(false);
     const annotationSectionRef = useRef(null);
-    const isSafeNavigationRef = useRef(false); // Ref para controlar la recarga segura
+    const isSafeNavigationRef = useRef(false);
+    const [dataImage, setDataImage] = useState(null);
 
     // Efecto para el aviso de 'beforeunload'
     useEffect(() => {
@@ -180,6 +181,7 @@ export function FormChampi() {
 
         try {
             let pureBase64 = "";
+            let pureBase64Data = "";
             if (originalImage) {
                 const parts = originalImage.split(',');
                 if (parts.length === 2 && parts[0].startsWith('data:image') && parts[0].includes('base64')) {
@@ -192,13 +194,23 @@ export function FormChampi() {
                 }
             }
 
+            if (dataImage) {
+                const partsData = dataImage.split(',');
+                if (partsData.length === 2 && partsData[0].startsWith('data:image') && partsData[0].includes('base64')) {
+                    pureBase64Data = partsData[1];
+                }
+            }
+
             const payload = {
                 ...data,
                 annotatedImageFile: pureBase64,
+                dataImageFile: pureBase64Data,
                 annotations: currentAnnotations
                     ? currentAnnotations.map(ann => ann.coordsLLM)
                     : [],
             };
+
+
 
             console.log("Payload a enviar (JSON):", payload);
 
@@ -228,6 +240,22 @@ export function FormChampi() {
             isSafeNavigationRef.current = false;
         } finally {
             setIsSubmitting(false);
+        }
+    }
+
+    const handleFileData = async (event) => {
+        event.preventDefault();
+        const file = event.target.files?.[0];
+
+        if (file) {
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                const imageDataUrl = e.target?.result;
+                if (typeof imageDataUrl === 'string') {
+                    setDataImage(imageDataUrl);
+                }
+            };
+            reader.readAsDataURL(file);
         }
     }
 
@@ -311,6 +339,20 @@ export function FormChampi() {
                             </ImageDisplay>
                         </div>
                     )}
+
+
+                    <div>
+                        <label htmlFor="imageDatos" className="block text-sm font-medium text-gray-700 mb-1">
+                            Imagen DATOS
+                        </label>
+                        <input
+                            type="file"
+                            id="imageDatos"
+                            accept="image/*,.heic,.heif"
+                            onChange={handleFileData}
+                            className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
+                        />
+                    </div>
 
                     <AppInput form={form} name="tempCompost" label="Temperatura Compost (ºC)" type="number" step="0.1" placeholder="Ej: 25.5" />
                     <AppInput form={form} name="tempAmbiente" label="Temperatura Ambiente (ºC)" type="number" step="0.1" placeholder="Ej: 22.0" />

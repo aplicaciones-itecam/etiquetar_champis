@@ -35,6 +35,7 @@ class Annotation(BaseModel):
 
 class AnnotatedImage(BaseModel):
     annotatedImageFile: str
+    dataImageFile: str
     annotations: list[Annotation]
     diaEntrada: Optional[str] = None
     tempAmbiente: Optional[float] = None
@@ -102,6 +103,29 @@ async def upload_image(payload: AnnotatedImage):
         except Exception as e:
             logger.error(f"Failed to save image: {str(e)}")
             raise ValueError(f"Could not save image: {str(e)}")
+        # Decodificar y guardar imagen
+        if payload.dataImageFile:
+            try:
+                image_data = base64.b64decode(payload.dataImageFile)
+                image = Image.open(io.BytesIO(image_data))
+                image = image.convert("RGB") 
+                img_width, img_height = image.size
+                logger.debug(f"Successfully decoded image, dimensions: {img_width}x{img_height}")
+            except Exception as e:
+                logger.error(f"Failed to decode image: {str(e)}")
+                raise ValueError("Invalid image data provided")
+
+            image_filename = f"{uuid}.webp"
+            image_path = join(DATOS_DIR, image_filename)
+            
+            try:
+                image.save(image_path, 'webp')
+                logger.debug(f"Image saved to {image_path}")
+            except Exception as e:
+                logger.error(f"Failed to save image: {str(e)}")
+                raise ValueError(f"Could not save image: {str(e)}")
+            
+        
 
         # Crear archivo de anotaciones YOLO
         label_filename = f"{uuid}.txt"
