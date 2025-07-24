@@ -74,7 +74,7 @@ function ChampiñonMarker() {
       humedad: parseFloat(humidity),
     };
 
-    fetch("http://localhost:8004/upload-image/", {
+    fetch("http://31.97.123.208:8000/upload-image/", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(payload),
