@@ -6,8 +6,8 @@ services:
         context: ./etiquetador
       container_name: api_etiquetador
       volumes:
-        - ./etiquetador/dataset:/etiquetador/dataset
-        - ./etiquetador/logs:/etiquetador/logs
+        - ../files/dataset:/etiquetador/dataset
+        - ../files/logs:/etiquetador/logs
       ports:
         - "8000:8000"
 
