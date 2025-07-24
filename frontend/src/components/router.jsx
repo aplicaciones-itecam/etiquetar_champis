@@ -12,7 +12,7 @@ import { HistoryDetail } from "@/components/history/history-detail";
 const router = createBrowserRouter([
 
     {
-        path: "/",
+        path: "/app1/",
         element: <RootLayout />,
         children: [
             {
