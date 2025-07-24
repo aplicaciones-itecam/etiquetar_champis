@@ -5,8 +5,8 @@ services:
       build:
         context: ./etiquetador
       container_name: api_etiquetador
-      volumes:
-        - ./app:/app
+      #volumes:
+       # - ./app:/app
       ports:
         - "8000:8000"
 
