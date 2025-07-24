@@ -9,7 +9,7 @@ export default defineConfig({
     tailwindcss(),
   ],
   server: {
-    host: true, // Esto permite que Vite escuche todas las conexiones externas
+    host: false, // Esto permite que Vite escuche todas las conexiones externas
     port: 3005,
     watch: {
       usePolling: true,
