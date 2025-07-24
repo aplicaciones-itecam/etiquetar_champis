@@ -13,7 +13,7 @@ services:
       context: ./frontend
     container_name: etiquetar-frontend_frontend
     ports:
-      - "3000:3000"
+      - "3000:3005"
     volumes:
       - ./frontend:/app
       - /app/node_modules
