@@ -28,7 +28,7 @@ export function HistoryDetail() {
             <div className="bg-white shadow rounded-lg overflow-hidden">
                 <div className="p-6">
                     <Link
-                        to="/historial"
+                        to="/champitech/historial"
                         className="mt-4 inline-block text-sm hover:underline bg-blue-500 py-3 px-5 text-white rounded-lg">
                         Volver al historial
                     </Link>
