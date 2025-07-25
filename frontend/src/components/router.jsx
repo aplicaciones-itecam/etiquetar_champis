@@ -19,10 +19,7 @@ const router = createBrowserRouter([
                 path: "",
                 element: <FormChampi />,
             },
-        ]
-    },
-
-    {
+            {
         path: "/historial",
         element: <RootLayout />,
         children: [
@@ -36,8 +33,8 @@ const router = createBrowserRouter([
             },
         ]
     },
-
-
+        ]
+    },
     {
         path: "*",
         element: <Custom404 />,
