@@ -6,4 +6,4 @@ export function cn(...inputs: ClassValue[]) {
 }
 
 /* export const API_URL_BASE = `http://172.20.10.4:8000` */
-export const API_URL_BASE = `http://31.97.123.208:8000`
+export const API_URL_BASE = `http://31.97.123.208:8000/champitech/api`

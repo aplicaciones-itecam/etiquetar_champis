@@ -20,19 +20,18 @@ const router = createBrowserRouter([
                 element: <FormChampi />,
             },
             {
-        path: "/champitech/historial",
-        element: <RootLayout />,
-        children: [
-            {
-                path: "",
-                element: <HistoryList />,
+                path: "/champitech/historial",
+                children: [
+                    {
+                        path: "",
+                        element: <HistoryList />,
+                    },
+                    {
+                        path: ":historyId",
+                        element: <HistoryDetail />,
+                    },
+                ]
             },
-            {
-                path: ":historyId",
-                element: <HistoryDetail />,
-            },
-        ]
-    },
         ]
     },
     {

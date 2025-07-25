@@ -62,7 +62,7 @@ export function HistoryList() {
                 {filteredData.map((record) => (
                     <Link
                         key={record.id}
-                        to={`/historial/${record.id}`}
+                        to={`/champitech/historial/${record.id}`}
                         className="block bg-gray-50 rounded-lg shadow hover:shadow-md transition-shadow overflow-hidden"
                     >
                         <div className="p-4">

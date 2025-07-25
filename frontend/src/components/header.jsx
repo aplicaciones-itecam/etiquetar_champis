@@ -30,8 +30,8 @@ export default function StickyHeader() {
     const [notifications] = useState(3)
 
     const navigationItems = [
-        { name: "Inicio", href: "/", icon: Home },
-        { name: "Historial", href: "/historial", icon: History },
+        { name: "Inicio", href: "/champitech/", icon: Home },
+        { name: "Historial", href: "/champitech/historial", icon: History },
     ]
 
     const getInitials = (name) => {
