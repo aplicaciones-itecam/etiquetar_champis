@@ -20,7 +20,7 @@ const router = createBrowserRouter([
                 element: <FormChampi />,
             },
             {
-        path: "/historial",
+        path: "/app1/historial",
         element: <RootLayout />,
         children: [
             {
