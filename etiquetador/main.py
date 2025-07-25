@@ -12,7 +12,7 @@ from fastapi.responses import JSONResponse
 from starlette.exceptions import HTTPException as StarletteHTTPException
 from fastapi.staticfiles import StaticFiles
 import traceback
-app = FastAPI()
+app = FastAPI(root_path="/champitech/api/")
 
 app.exception_handler(StarletteHTTPException)
 async def http_exception_handler(request, exc):
