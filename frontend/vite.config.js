@@ -8,7 +8,7 @@ export default defineConfig({
     react(),
     tailwindcss(),
   ],
-  base: '/app1/',
+  base: '/champitech/',
   server: {
     host: false, // Esto permite que Vite escuche todas las conexiones externas
     port: 3005,
