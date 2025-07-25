@@ -12,7 +12,7 @@ import { HistoryDetail } from "@/components/history/history-detail";
 const router = createBrowserRouter([
 
     {
-        path: "/app1/",
+        path: "/champitech/",
         element: <RootLayout />,
         children: [
             {
@@ -20,7 +20,7 @@ const router = createBrowserRouter([
                 element: <FormChampi />,
             },
             {
-        path: "/app1/historial",
+        path: "/champitech/historial",
         element: <RootLayout />,
         children: [
             {
