@@ -12,10 +12,11 @@ export function RootLayout() {
             <StickyHeader />
             <main className="@container/main flex flex-1 flex-col gap-2 p-4 lg:max-w-7xl lg:mx-auto">
                 <Outlet />
+                <p>
+                    El modelo ha sido entrenado con Ultralytics usando <a href="https://www.ultralytics.com/">Yolov8</a>
+                </p>
             </main>
-            <p>
-                El modelo ha sido entrenado con Ultralytics usando <a href="https://www.ultralytics.com/">Yolov8</a>
-            </p>
+
         </ErrorBoundary>
     );
 }
