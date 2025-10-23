@@ -1,1 +1,1 @@
-adios manolo
+El modelo ha sido entrenado con Ultralytics usando <a href="https://www.ultralytics.com/">Yolov8</a>
